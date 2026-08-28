@@ -3,6 +3,9 @@ import { assessHour, batteryPlan, daylightStatus, describeWeather, type HourCond
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const FORECAST_SOURCE = '<a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> forecast data (CC BY 4.0)';
+// A forecast check is useful only while it is current. Keep the whole two-step
+// provider exchange bounded so a stalled connection never strands the form.
+const REQUEST_TIMEOUT_MS = 15_000;
 let lastSubmitter: HTMLButtonElement | null = null;
 
 function header() {
@@ -185,11 +188,18 @@ async function handleSubmit(event: Event) {
   persistPreferences(form, prefs);
   if (!navigator.onLine) { renderFailure(results, 'You appear to be offline.', 'The saved app still opens offline, but a new field check needs a current forecast. Reconnect and try again.'); return; }
 
+  const controller = new AbortController();
+  let cancelledByRider = false;
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   button.disabled = true; button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Gathering observations…</span>';
   results.className = 'results-shell loading-results';
-  results.innerHTML = `<div class="pressed-leaf" aria-hidden="true">❋</div><div><p class="eyebrow">Contacting forecast source</p><h2 id="results-title" tabindex="-1">Gathering hourly observations…</h2><p>Looking up a broad place, then comparing the next hours with your limits.</p></div>`;
+  results.innerHTML = `<div class="pressed-leaf" aria-hidden="true">❋</div><div><p class="eyebrow">Contacting forecast source</p><h2 id="results-title" tabindex="-1">Gathering hourly observations…</h2><p>Looking up a broad place, then comparing the next hours with your limits.</p><button class="button secondary cancel-button" type="button">Cancel check</button></div>`;
+  results.querySelector<HTMLButtonElement>('.cancel-button')?.addEventListener('click', () => {
+    cancelledByRider = true;
+    controller.abort();
+  });
   try {
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(prefs.place)}&count=1&language=en&format=json`);
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(prefs.place)}&count=1&language=en&format=json`, { signal: controller.signal });
     if (!geoRes.ok) throw new Error('The place lookup did not respond.');
     const geo = await geoRes.json();
     if (!geo.results?.length) throw new Error('No broad place matched. Try a nearby town or postcode.');
@@ -199,15 +209,20 @@ async function handleSubmit(event: Event) {
       hourly: 'temperature_2m,apparent_temperature,precipitation_probability,precipitation,snowfall,weather_code,wind_speed_10m,wind_gusts_10m,visibility',
       daily: 'sunrise,sunset'
     });
-    const forecastRes = await fetch(`https://api.open-meteo.com/v1/forecast?${query}`);
+    const forecastRes = await fetch(`https://api.open-meteo.com/v1/forecast?${query}`, { signal: controller.signal });
     if (!forecastRes.ok) throw new Error('The forecast source did not respond.');
     const forecast = await forecastRes.json();
     renderResults(results, prefs, place, forecast);
     document.querySelector<HTMLElement>('#results-title')?.focus();
   } catch (caught) {
-    const message = caught instanceof Error ? caught.message : 'The field check could not be completed.';
+    const message = controller.signal.aborted
+      ? cancelledByRider
+        ? 'You cancelled this field check before the forecast arrived.'
+        : 'The forecast request took too long. Please try again.'
+      : caught instanceof Error ? caught.message : 'The field check could not be completed.';
     renderFailure(results, 'We could not complete this field check.', `${message} Check your connection or place name, then try again.`);
   } finally {
+    window.clearTimeout(timeout);
     button.disabled = false; button.innerHTML = '<span>Check the ride window again</span><span aria-hidden="true">↻</span>';
   }
 }

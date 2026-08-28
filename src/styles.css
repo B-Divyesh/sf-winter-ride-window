@@ -226,6 +226,19 @@ input:hover, select:hover { border-color: var(--ink); }
   .footer-links { justify-content: flex-start; flex-wrap: wrap; }
   .art-credit { grid-column: auto; }
   .text-page { padding-top: 64px; }
+
+  /* Forecast values and uncertainty are decision-supporting content, not
+     ornament. Keep every compact supporting style at the documented 16px
+     mobile floor, including populated-result labels and source context. */
+  .site-header nav, .brand, .eyebrow, .hero-facts,
+  .form-section legend span, .input-unit > span, .submit-row > p,
+  .result-head p:last-child, .least-flags span, .least-flags small,
+  .status, .hour-time, .hour-card summary > span:nth-of-type(3),
+  .sample-note, .plan-grid p, .plan-grid li,
+  .source-note p, .method-list li > span, .site-footer p {
+    font-size: 1rem;
+  }
+  .specimen-number { font-size: 1rem !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

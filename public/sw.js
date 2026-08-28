@@ -1,4 +1,4 @@
-const CACHE = 'winter-ride-window-v1';
+const CACHE = 'winter-ride-window-v2';
 const SHELL = ['/manifest.webmanifest', '/favicon.svg', '/assets/winter-field-guide-720.webp'];
 self.addEventListener('install', event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);

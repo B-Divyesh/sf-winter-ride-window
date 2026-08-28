@@ -44,6 +44,7 @@ test('explains why a new check is unavailable offline', async ({ page, context }
 test('keeps the explanatory app shell available after losing connection', async ({ page, context }) => {
   await page.goto('/');
   await page.evaluate(() => navigator.serviceWorker.ready);
+  expect(await page.evaluate(() => caches.keys())).toContain('winter-ride-window-v2');
   await page.reload();
   await context.setOffline(true);
   await page.reload();
@@ -92,6 +93,24 @@ test('keeps populated mobile results in the viewport and uses valid hourly list 
   expect(scan.violations.filter(v => v.id === 'aria-allowed-role')).toEqual([]);
 });
 
+test('keeps every meaningful mobile result and supporting label at the 16px floor', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByLabel('Broad place').fill('Leeds');
+  await page.getByRole('button', { name: 'Check the ride window' }).click();
+  await expect(page.getByText('The forecast cannot see the path.')).toBeVisible();
+  const sizes = await page.locator([
+    '.site-header .brand', '.result-head .eyebrow', '.result-head p:last-child',
+    '.least-flags span', '.least-flags small', '.status', '.hour-time',
+    '.hour-card summary > span:nth-of-type(3)', '.sample-note', '.plan-grid p',
+    '.plan-grid li', '.specimen-number', '.source-note p', '.source-note a'
+  ].join(', ')).evaluateAll(elements => elements.map(element => ({
+    text: element.textContent?.trim(), size: Number.parseFloat(getComputedStyle(element).fontSize)
+  })));
+  expect(sizes).not.toEqual([]);
+  expect(sizes.filter(({ size }) => size < 16)).toEqual([]);
+});
+
 test('gives mobile supporting copy and brand links 44px-or-larger targets', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -103,4 +122,34 @@ test('gives mobile supporting copy and brand links 44px-or-larger targets', asyn
     elements.map(element => element.getBoundingClientRect().height)
   );
   expect(targets.every(height => height >= 44)).toBe(true);
+});
+
+test('recovers from a stalled forecast request within the application timeout', async ({ page }) => {
+  // Keep the regression fast while exercising the production abort path rather
+  // than relying on a browser/network timeout.
+  await page.addInitScript(() => {
+    const originalSetTimeout = window.setTimeout;
+    (window as any).setTimeout = (handler: TimerHandler, delay?: number, ...args: any[]) =>
+      originalSetTimeout(handler, delay && delay >= 15_000 ? 10 : delay, ...args);
+  });
+  await page.unroute('**/v1/forecast?**');
+  await page.route('**/v1/forecast?**', () => new Promise<void>(() => {}));
+  await page.goto('/');
+  await page.getByLabel('Broad place').fill('Leeds');
+  await page.getByRole('button', { name: 'Check the ride window' }).click();
+  await expect(page.getByRole('heading', { name: 'We could not complete this field check.' })).toBeFocused();
+  await expect(page.getByText(/forecast request took too long/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Check the ride window again' })).toBeEnabled();
+});
+
+test('lets the rider cancel a stalled forecast request', async ({ page }) => {
+  await page.unroute('**/v1/forecast?**');
+  await page.route('**/v1/forecast?**', () => new Promise<void>(() => {}));
+  await page.goto('/');
+  await page.getByLabel('Broad place').fill('Leeds');
+  await page.getByRole('button', { name: 'Check the ride window' }).click();
+  await page.getByRole('button', { name: 'Cancel check' }).click();
+  await expect(page.getByRole('heading', { name: 'We could not complete this field check.' })).toBeFocused();
+  await expect(page.getByText(/You cancelled this field check/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Check the ride window again' })).toBeEnabled();
 });
