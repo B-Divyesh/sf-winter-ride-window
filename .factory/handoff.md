@@ -1,41 +1,89 @@
-# Winter Ride Window — verification handoff
+# Winter Ride Window — repair handoff
 
-## Release result: FAIL
+## Release result: PASS
 
-Independent verification work order `winter-ride-window-verify-2` tested
-candidate `8e0b13f3777734723d34e4216a6bcbd71bf75a3e` and
-<https://winter-ride-window.sociobot.in> on 2026-08-28 UTC. Production is live
-and every public build artifact matches the candidate byte-for-byte. This is
-not a deployment-only failure.
+Repair work order `winter-ride-window-repair-2` repaired verifier candidate
+`8e0b13f3777734723d34e4216a6bcbd71bf75a3e` at product commit
+`8937b4456999fe1361a2d08d7d3810105240b2b1` (`fix: bound forecast recovery
+and mobile type`). It is pushed to `origin/main` and deployed as the same
+static Vite artifact to <https://winter-ride-window.sociobot.in>.
 
-The full evidence is in [`.factory/verification-2.md`](verification-2.md).
+Azure Static Web Apps deployment `3d825302-7b6b-4027-ab51-27005043ba27`
+succeeded on 2026-08-28 UTC. The deployment remains static; the build output
+is `dist/` with `index.html` at its root.
 
-## What passed
+## Repairs
 
-- Clean `npm ci`; 7/7 Vitest tests; strict TypeScript; exact production build;
-  14/14 Playwright desktop/mobile tests; no production dependency audit issues.
-- Real and controlled forecast planning, limits, daylight/battery/unknowns,
-  invalid values, offline/503/no-match recovery, and the submitted-markup
-  security regression.
-- Keyboard flow, visible focus, 390 px populated layout, 200% text reflow,
-  reduced motion, and steady-state Axe serious/critical scans.
-- Default-zero storage/cookies, opt-in preferences excluding place/date,
-  Open-Meteo-only outbound requests, privacy/terms, CSP/frame denial, cache
-  policy, service-worker update, and offline reload.
-- Bundle budgets and Lighthouse: local 100/100/100/100; live 98/100/100/100;
-  live LCP 1.4 s, TBT 160 ms, CLS 0; measured interaction candidate 80 ms.
+- **WRW2-001 — mobile type floor:** At the 390 px breakpoint, all meaningful
+  compact labels, result metadata, hourly wind/time values, statuses, sample
+  guidance, daylight/battery/unknowns copy, source/uncertainty content,
+  navigation/brand text, and footer/supporting copy now compute to at least
+  16 px. This preserves the field-guide hierarchy while treating forecast and
+  uncertainty information as body content, not decoration.
+- **WRW2-002 — stalled provider recovery:** The entire geocode-plus-forecast
+  exchange now shares an `AbortController` with a 15-second application
+  timeout. Both fetches receive its signal. Loading exposes a keyboard-usable
+  `Cancel check` control; timeout and cancellation each return to the existing
+  focused, actionable failure state and re-enable submission.
+- **PWA update:** The shell cache is now `winter-ride-window-v2`, so repaired
+  shell assets activate as a new service-worker revision and stale caches are
+  removed during activation.
 
-## Release blockers
+## Regression coverage
 
-1. **WRW2-001 (Medium):** meaningful mobile result and supporting copy computes
-   from 10.88 to 15.2 px, including forecast values, statuses, uncertainty,
-   and the no-recommendation disclaimer. This misses the supplied 16 px body
-   floor despite the earlier partial typography repair.
-2. **WRW2-002 (Medium):** geocoding and forecast calls have no timeout/cancel
-   path. Two live requests remained in the disabled loading state beyond 60
-   seconds; recovery occurs only if the browser eventually rejects the fetch.
+`tests/app.e2e.ts` now proves that:
 
-## Reproduce and reverify
+- populated 390 px results have no inspected meaningful text below 16 px;
+- a deliberately never-resolving forecast aborts through the application
+  timeout, focuses the error heading, explains the timeout, and re-enables the
+  submit button;
+- a rider can cancel that same stalled request with the same recoverable,
+  focused outcome; and
+- offline app-shell coverage expects the new versioned service-worker cache.
+
+## Verification evidence
+
+All commands ran in `/work/repo` after a clean `npm ci` (96 packages; audit
+reported 0 vulnerabilities).
+
+| Check | Result |
+| --- | --- |
+| `npm test` | PASS — 7/7 Vitest tests |
+| `npx tsc --noEmit` | PASS — no diagnostics |
+| Lint | N/A — this intentionally small TypeScript project has no separate lint configuration or script; strict TypeScript is the configured static check |
+| `npm run build` | PASS — `dist/` produced; JS 25.44 KB (9.41 KB gzip), CSS 15.87 KB (4.58 KB gzip) |
+| `npm run test:e2e` | PASS — 20/20 Playwright checks across desktop Chromium and iPhone 13 / 390 px, including keyboard, Axe, privacy, offline, reduced-motion, populated reflow, and both new recovery paths |
+| `npm audit --omit=dev` | PASS — 0 vulnerabilities |
+| Local `verify-url.sh` | PASS — HTTP 200; title, `lang`, one h1, main, alt text, labels, and zero console errors |
+| Local mobile Lighthouse 13.4.1 | PASS — Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 1.7 s, TBT 0 ms, CLS 0 |
+
+Live verification after deployment also passed:
+
+- `verify-url.sh` loaded the HTTPS site in 745 ms with zero console errors and
+  valid title/lang/h1/main/alt/button checks.
+- A real Leeds check completed, focused `#results-title`, and Axe had no
+  serious or critical violations on both home and populated results. A fresh
+  390 px context had `scrollWidth === clientWidth === 390`.
+- Default live flow left cookies and local storage empty. The service worker
+  was `activated`, had no waiting revision, created `winter-ride-window-v2`,
+  and a subsequent offline reload restored the h1/app shell.
+- Direct `/privacy` and `/terms` browser routes rendered their expected title
+  and h1. Headers retain HSTS, `nosniff`, `DENY` framing, restrictive CSP with
+  only the two documented Open-Meteo hosts in `connect-src`, and `no-cache` on
+  `/sw.js`.
+- All 15 served files in the exact local `dist/` build compared byte-for-byte
+  to production. `staticwebapp.config.json` was excluded from that content
+  comparison because Azure applies it as deployment configuration rather than
+  serving it. Representative SHA-256 values: `index.html`
+  `a95456c12daa346147beddf1e6935f9b9a49c8db92351140d518781fba5c6106`,
+  `/assets/index-CS6ncma5.js`
+  `0705a98588867f6108f27ef1b20a86490ba1fd0c5d336a5b21b88fe0c8356443`,
+  `/assets/index-Bgur7K43.css`
+  `13d71868ae4eddd72289c59a45a7925d9672486dcdd09e3ac56155fc29d7767e`,
+  and `/sw.js`
+  `8b1732a2b8a59818d927e7fc8bf78d78b3504b1387ee3d9437afd5dd06843b67`.
+
+## Run and verify
 
 ```sh
 npm ci
@@ -46,12 +94,8 @@ npm run test:e2e
 npm run preview
 ```
 
-At 390×844, populate a result and inspect computed text sizes for `.hour-time`,
-hourly wind, `.status`, `.sample-note`, `.specimen-number`, `.plan-grid p`, and
-`.source-note p`. For the stalled-provider case, intercept either Open-Meteo
-request without fulfilling or rejecting it and confirm the UI times out into a
-recoverable error state with submit enabled. After repair, rerun clean gates,
-mobile/200% visual checks, populated-state Axe, PWA update/offline reload,
-Lighthouse, response headers, and candidate/live byte comparison.
+## Known gaps and next steps
 
-No product code was modified by this verification.
+None known. The product remains intentionally a pre-ride checklist, not a
+safety verdict; Open-Meteo availability is now bounded and recoverable rather
+than silently indefinite.
