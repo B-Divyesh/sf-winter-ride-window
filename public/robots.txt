@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://winter-ride-window.sociobot.in/sitemap.xml

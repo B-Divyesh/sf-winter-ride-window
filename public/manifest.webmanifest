@@ -1,0 +1,10 @@
+{
+  "name": "Winter Ride Window",
+  "short_name": "Ride Window",
+  "description": "A local-first winter cycling pre-ride field check.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3eedc",
+  "theme_color": "#17372e",
+  "icons": [{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
