@@ -1,0 +1,14 @@
+{
+  "slug": "winter-ride-window",
+  "title": "Winter Ride Window",
+  "artifact_class": "static-web",
+  "smallest_useful_product": "A static pre-ride planner where commuter cyclists enter broad route exposure and personal thresholds, then receive a cited forecast checklist, daylight and battery plan, and unknowns to check rather than a safety verdict.",
+  "constraints": [
+    "Use licensed forecast data and show its age and source.",
+    "Label uncertainty and never promise safety.",
+    "Retain no precise home or work route by default.",
+    "Do not infer country-specific rules."
+  ],
+  "monetization": "free",
+  "source": "Factory work order winter-ride-window-build-1"
+}
