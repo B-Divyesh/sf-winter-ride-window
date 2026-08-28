@@ -222,7 +222,9 @@ function persistPreferences(form: HTMLFormElement, prefs: Preferences) {
 function showError(node: HTMLElement, message: string) { node.textContent = message; node.hidden = false; node.focus(); }
 function renderFailure(node: HTMLElement, title: string, message: string) {
   node.className = 'results-shell error-results';
-  node.innerHTML = `<div class="error-mark" aria-hidden="true">!</div><div><p class="eyebrow">Forecast unavailable</p><h2 id="results-title" tabindex="-1">${title}</h2><p>${message}</p><button class="button secondary retry-button" type="button">Return to the form</button></div>`;
+  // Messages may contain submitted place text or provider responses. Escape them
+  // before composing this static result template so those values stay text.
+  node.innerHTML = `<div class="error-mark" aria-hidden="true">!</div><div><p class="eyebrow">Forecast unavailable</p><h2 id="results-title" tabindex="-1">${escapeHtml(title)}</h2><p>${escapeHtml(message)}</p><button class="button secondary retry-button" type="button">Return to the form</button></div>`;
   node.querySelector('button')?.addEventListener('click', () => { lastSubmitter?.focus(); document.querySelector('#planner')?.scrollIntoView(); });
   node.querySelector<HTMLElement>('#results-title')?.focus();
 }
@@ -254,9 +256,9 @@ function renderResults(node: HTMLElement, prefs: Preferences, place: any, foreca
       <div class="least-flags"><span>First unflagged sample</span><strong>${leastFlags}</strong><small>This is not a recommendation to ride.</small></div>
     </div>
     <div class="result-legend" aria-label="Hourly comparison summary"><span class="status aligned">✓ ${counts.aligned} within limits</span><span class="status check">◇ ${counts.check} check closer</span><span class="status outside">↑ ${counts.outside} outside limits</span></div>
-    <div class="hour-strip" role="list" aria-label="Two-hour forecast samples">
+    <ul class="hour-strip" aria-label="Two-hour forecast samples">
       ${assessed.map(x => hourCard(x.hour, x.assessment, sunrise, sunset, prefs.tripMinutes)).join('')}
-    </div>
+    </ul>
     <p class="sample-note">Samples shown every 2 hours from 06:00–22:00. Open a slot for the comparison. Forecast values can change between samples.</p>
     <div class="plan-grid">
       <section><p class="specimen-number">A · Daylight</p><h3>${formatHour(sunrise)} sunrise<br>${formatHour(sunset)} sunset</h3><p>Each slot notes whether a ${prefs.tripMinutes}-minute trip sits inside forecast daylight. Civil twilight and local shade are not included.</p></section>
@@ -269,10 +271,10 @@ function renderResults(node: HTMLElement, prefs: Preferences, place: any, foreca
 function hourCard(hour: HourConditions, assessment: ReturnType<typeof assessHour>, sunrise: string, sunset: string, minutes: number) {
   const label = assessment.level === 'aligned' ? 'Within entered limits' : assessment.level === 'check' ? 'Check closer' : 'Outside a limit';
   const reasons = [...assessment.flags, ...assessment.notes];
-  return `<details class="hour-card ${assessment.level}" role="listitem"><summary><span class="hour-time">${formatHour(hour.time)}</span><span class="weather-glyph" aria-hidden="true">${weatherGlyph(hour.weatherCode)}</span><strong>${Math.round(hour.temperature)}°</strong><span>${Math.round(hour.wind)} km/h</span><span class="slot-state">${assessment.level === 'aligned' ? '✓' : assessment.level === 'check' ? '◇' : '↑'} <span class="sr-only">${label}</span></span></summary>
+  return `<li><details class="hour-card ${assessment.level}"><summary><span class="hour-time">${formatHour(hour.time)}</span><span class="weather-glyph" aria-hidden="true">${weatherGlyph(hour.weatherCode)}</span><strong>${Math.round(hour.temperature)}°</strong><span>${Math.round(hour.wind)} km/h</span><span class="slot-state">${assessment.level === 'aligned' ? '✓' : assessment.level === 'check' ? '◇' : '↑'} <span class="sr-only">${label}</span></span></summary>
     <div class="hour-detail"><h3>${label}</h3><p>${describeWeather(hour.weatherCode)} · feels like ${Math.round(hour.feelsLike)}°C · gusts ${Math.round(hour.gust)} km/h · precipitation ${Math.round(hour.precipitationProbability)}%</p>
     ${reasons.length ? `<ul>${reasons.map(reason => `<li>${reason}</li>`).join('')}</ul>` : '<p>No sampled forecast value crosses an entered limit or contextual check.</p>'}
-    <p class="daylight-line">☼ ${daylightStatus(hour.time, sunrise, sunset, minutes)}</p></div></details>`;
+    <p class="daylight-line">☼ ${daylightStatus(hour.time, sunrise, sunset, minutes)}</p></div></details></li>`;
 }
 
 function weatherGlyph(code: number) { if (code === 0) return '☼'; if (code <= 3) return '◒'; if (code >= 71 && code <= 86) return '✣'; if (code >= 51) return '╱'; return '≋'; }

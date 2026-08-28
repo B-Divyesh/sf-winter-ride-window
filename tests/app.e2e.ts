@@ -59,3 +59,48 @@ test('home and privacy page have no serious accessibility violations', async ({ 
   results = await new AxeBuilder({ page: page as any }).analyze();
   expect(results.violations.filter(v => ['serious', 'critical'].includes(v.impact || ''))).toEqual([]);
 });
+
+test('renders unmatched place text as text, without executable result markup', async ({ page }) => {
+  await page.unroute('**/v1/search?**');
+  await page.route('**/v1/search?**', route => route.fulfill({ json: { results: [] } }));
+  const submitted = '<img src="x" onerror="document.body.dataset.qa=executed">';
+  await page.goto('/');
+  await page.getByLabel('Broad place').fill(submitted);
+  await page.getByRole('button', { name: 'Check the ride window' }).click();
+  await expect(page.getByRole('heading', { name: 'We could not complete this field check.' })).toBeFocused();
+  await expect(page.locator('#results')).toContainText(`No broad place matched “${submitted}”.`);
+  await expect(page.locator('#results img')).toHaveCount(0);
+  expect(await page.evaluate(() => ({
+    marker: document.body.dataset.qa,
+    hasHandlerMarkup: document.querySelector('#results [onerror]') !== null
+  }))).toEqual({ marker: undefined, hasHandlerMarkup: false });
+});
+
+test('keeps populated mobile results in the viewport and uses valid hourly list semantics', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByLabel('Broad place').fill('Leeds');
+  await page.getByRole('button', { name: 'Check the ride window' }).click();
+  await expect(page.getByText('The forecast cannot see the path.')).toBeVisible();
+  await expect(page.locator('.hour-strip')).toHaveCount(1);
+  await expect(page.locator('.hour-strip > li > details.hour-card')).toHaveCount(9);
+  expect(await page.locator('.hour-card').evaluateAll(cards => cards.every(card => !card.hasAttribute('role')))).toBe(true);
+  expect(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+  expect(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  const scan = await new AxeBuilder({ page: page as any }).analyze();
+  expect(scan.violations.filter(v => v.id === 'aria-allowed-role')).toEqual([]);
+});
+
+test('gives mobile supporting copy and brand links 44px-or-larger targets', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const sizes = await page.locator('.field, .field small, .choice small, .hero-plate figcaption, .hero-plate figcaption span').evaluateAll(elements =>
+    elements.map(element => Number.parseFloat(getComputedStyle(element).fontSize))
+  );
+  expect(sizes.every(size => size >= 16)).toBe(true);
+  const targets = await page.locator('.site-header .brand, .footer-brand').evaluateAll(elements =>
+    elements.map(element => element.getBoundingClientRect().height)
+  );
+  expect(targets.every(height => height >= 44)).toBe(true);
+});
