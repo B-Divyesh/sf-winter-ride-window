@@ -45,6 +45,7 @@ Verified locally on 2026-08-28:
 
 - `npm test`: 5/5 Vitest unit tests passed.
 - `npm run build`: passed; `dist/index.html` exists at the deploy root.
+- Clean-clone reproduction with `npm ci && npm test && npm run build`: passed.
 - `npm run test:e2e`: 8/8 Playwright checks passed across desktop Chromium and
   a 390px mobile viewport. These cover the completed planner, offline recovery,
   offline app-shell reload, privacy route, result focus, no serious/critical Axe
