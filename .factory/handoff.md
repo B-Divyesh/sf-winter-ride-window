@@ -1,4 +1,71 @@
-# Winter Ride Window — independent verification handoff
+# Winter Ride Window — repair handoff
+
+## Release result: PASS
+
+Work order `winter-ride-window-repair-1` repaired every independent-verifier
+blocker from candidate `10eb39a89659aed4d0e5bf506671b8a582c11155`. The repair is
+committed and pushed on `main` as `a0b9454` and `b673413`, then deployed as
+Azure Static Web Apps deployment `72218ad0-27f9-456d-b520-1ee6fd45ea3d`.
+
+Production: <https://winter-ride-window.sociobot.in>
+
+### Repairs
+
+- **WRW-001:** Failure copy assigns dynamic values through `textContent`; a
+  no-match response no longer repeats submitted place markup. The error still
+  tells the rider to try a nearby town or postcode. A regression submits an
+  image/onerror canary and proves it creates neither markup nor execution.
+- **WRW-002:** Hourly samples are semantic list items, and narrow-screen
+  detail panels are contained by the horizontal strip/card. Populated 390 px
+  and 200% text states keep the document within the viewport.
+- **WRW-003:** Production now sends a restrictive CSP (with only the documented
+  Open-Meteo endpoints), `frame-ancestors 'none'`, and `X-Frame-Options: DENY`.
+- **WRW-004:** Mobile field/help/route-choice/plate text now computes to at
+  least 16 px; header and footer brand links have 44 px minimum targets.
+- **WRW-005:** Removed invalid `role="listitem"` from native `details` and
+  used `ul`/`li` semantics. The populated Axe scan has no
+  `aria-allowed-role` violation.
+
+The researched field-guide design, Open-Meteo workflow, optional local-only
+preferences, PWA, and all previously passing planner behavior are preserved.
+
+### Exact verification evidence
+
+On 2026-08-28 UTC:
+
+- Clean `npm ci`: 96 packages installed, 0 vulnerabilities.
+- `npm test`: 7/7 passed; `npx tsc --noEmit`: passed; `npm run build`: passed
+  with `dist/index.html` at the deploy root.
+- `npm run test:e2e`: 14/14 passed across desktop Chromium and iPhone 13,
+  including the security canary, populated 390 px and 200% text regression,
+  native list semantics, target sizing, offline/PWA, focus, and Axe coverage.
+- The supplied independent verifier passed **53/53** against both a local
+  production preview and live production. It covers keyboard, forms/boundaries,
+  privacy/outbound hosts, direct legal routes, reduced motion, real forecast,
+  service-worker update/offline reload, desktop/390 px, and Axe. Its malicious
+  place observation is `injectedImages: 0` and `containsHandlerMarkup: false`.
+- `/opt/fleet/lib/verify-url.sh` passed live: HTTPS 200, 802 ms load, no
+  console/page errors, and title/lang/one h1/main/alt checks passed.
+- Live headers include CSP, X-Frame-Options, HSTS, nosniff, referrer and
+  permissions policies. CSP permits only self plus the two Open-Meteo hosts.
+- Lighthouse 13.4.1 mobile live: Performance 100, Accessibility 100, Best
+  Practices 100, SEO 100; FCP 0.9 s, LCP 1.4 s, TBT 60 ms, CLS 0, transfer
+  103 KiB. Production JS is 24.99 KB (9.26 KB gzip), CSS 15.49 KB (4.51 KB
+  gzip), and the mobile AVIF hero 35,148 B.
+- Live identity matches `dist/` byte-for-byte: `index.html`
+  `5cafbad3a3bee2773ab69138fcb1f742122096f8f7d00a555cb567700fad1827`; JS
+  `assets/index-CZ-4fAoT.js`
+  `ebf10ca6fa5c9936ae14af434d63f18a2fb36a8dc05b0403d19e0ac51f7e581a`.
+
+### Known boundaries
+
+Open-Meteo's first geocoding result is still used, and this remains a
+transparent planning comparison—not a safety verdict. Riders must observe
+route treatment, ice, closures, local wind, and conditions themselves.
+
+---
+
+## Historical independent verification record (superseded)
 
 ## Release result: FAIL
 
