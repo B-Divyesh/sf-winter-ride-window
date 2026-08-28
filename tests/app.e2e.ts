@@ -68,11 +68,11 @@ test('renders unmatched place text as text, without executable result markup', a
   await page.getByLabel('Broad place').fill(submitted);
   await page.getByRole('button', { name: 'Check the ride window' }).click();
   await expect(page.getByRole('heading', { name: 'We could not complete this field check.' })).toBeFocused();
-  await expect(page.locator('#results')).toContainText(`No broad place matched “${submitted}”.`);
+  await expect(page.locator('#results')).toContainText('No broad place matched. Try a nearby town or postcode.');
   await expect(page.locator('#results img')).toHaveCount(0);
   expect(await page.evaluate(() => ({
     marker: document.body.dataset.qa,
-    hasHandlerMarkup: document.querySelector('#results [onerror]') !== null
+    hasHandlerMarkup: document.querySelector('#results')?.innerHTML.includes('onerror')
   }))).toEqual({ marker: undefined, hasHandlerMarkup: false });
 });
 

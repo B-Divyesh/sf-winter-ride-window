@@ -192,7 +192,7 @@ async function handleSubmit(event: Event) {
     const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(prefs.place)}&count=1&language=en&format=json`);
     if (!geoRes.ok) throw new Error('The place lookup did not respond.');
     const geo = await geoRes.json();
-    if (!geo.results?.length) throw new Error(`No broad place matched “${prefs.place}”. Try a nearby town or postcode.`);
+    if (!geo.results?.length) throw new Error('No broad place matched. Try a nearby town or postcode.');
     const place = geo.results[0];
     const query = new URLSearchParams({
       latitude: String(place.latitude), longitude: String(place.longitude), timezone: 'auto', forecast_days: '7',
@@ -222,9 +222,11 @@ function persistPreferences(form: HTMLFormElement, prefs: Preferences) {
 function showError(node: HTMLElement, message: string) { node.textContent = message; node.hidden = false; node.focus(); }
 function renderFailure(node: HTMLElement, title: string, message: string) {
   node.className = 'results-shell error-results';
-  // Messages may contain submitted place text or provider responses. Escape them
-  // before composing this static result template so those values stay text.
-  node.innerHTML = `<div class="error-mark" aria-hidden="true">!</div><div><p class="eyebrow">Forecast unavailable</p><h2 id="results-title" tabindex="-1">${escapeHtml(title)}</h2><p>${escapeHtml(message)}</p><button class="button secondary retry-button" type="button">Return to the form</button></div>`;
+  // Messages may contain submitted place text or provider responses. Keep all
+  // dynamic values out of HTML templates so they can only ever become text.
+  node.innerHTML = '<div class="error-mark" aria-hidden="true">!</div><div><p class="eyebrow">Forecast unavailable</p><h2 id="results-title" tabindex="-1"></h2><p class="failure-message"></p><button class="button secondary retry-button" type="button">Return to the form</button></div>';
+  node.querySelector<HTMLElement>('#results-title')!.textContent = title;
+  node.querySelector<HTMLElement>('.failure-message')!.textContent = message;
   node.querySelector('button')?.addEventListener('click', () => { lastSubmitter?.focus(); document.querySelector('#planner')?.scrollIntoView(); });
   node.querySelector<HTMLElement>('#results-title')?.focus();
 }
