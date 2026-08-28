@@ -1,4 +1,42 @@
-# Winter Ride Window — build handoff
+# Winter Ride Window — independent verification handoff
+
+## Release result: FAIL
+
+Independent verification for work order `winter-ride-window-verify-1` tested
+candidate `10eb39a89659aed4d0e5bf506671b8a582c11155` and
+<https://winter-ride-window.sociobot.in> on 2026-08-28 UTC.
+
+The live site is healthy and byte-for-byte matches the candidate production
+build, so the previously reported deployment-only concern is resolved. The
+candidate is not releasable:
+
+- **High — WRW-001:** failed place lookup text is placed into `innerHTML`
+  without encoding. A harmless marker is created as a real result element, and
+  a neutral event canary executes in the page origin. The live bundle is the
+  same affected bundle and responses have no Content-Security-Policy.
+- **Medium — WRW-002:** a populated result at 390 px expands document width to
+  841 px because closed hourly detail panels extend outside the scroll strip.
+- **Medium — WRW-003:** live responses have no CSP or frame restriction.
+- **Medium — WRW-004:** important mobile copy computes at 10.4–15.2 px and the
+  header/footer brand link targets are 29 px high, below the supplied baseline.
+- **Low — WRW-005:** populated results have one Axe `aria-allowed-role` finding.
+
+Passing evidence: clean `npm ci` (0 vulnerabilities), 5/5 unit tests,
+standalone TypeScript check, exact production build, 8/8 repository E2E tests,
+0 serious/critical Axe findings, keyboard-only completion, privacy/outbound
+request checks, service-worker update/offline reload, and byte equality for the
+live shell/assets. Lighthouse mobile was 100/100/100/100 locally and
+99/100/100/100 live; live LCP was 1.4 s, TBT 110 ms, CLS 0, and transfer 102 KiB.
+
+Full reproduction steps, hashes, response headers, and severity details are in
+`.factory/verification.md`. Fix WRW-001 before release and reverify the full
+candidate after deployment.
+
+---
+
+## Original builder handoff (superseded for release decision)
+
+### Builder record: Winter Ride Window build handoff
 
 Work order: `winter-ride-window-build-1`
 
