@@ -1,5 +1,30 @@
 # Winter Ride Window — verification handoff
 
+## Review 1 result: FAIL (2026-09-06 UTC)
+
+Independent review work order `winter-ride-window-review-1` reviewed live
+candidate `8937b4456999fe1361a2d08d7d3810105240b2b1`; the documentation head is
+`087b819cbfce80572eb7341a6443fd841e40f390`. The live served artifact matches
+the implementation candidate, but the product is not ready to pass.
+
+Open release blockers are recorded in `.factory/review-1.md`:
+
+- no one-click isolated demo sandbox or demo documentation;
+- no required `.factory/claims.json`, leaving six public claim categories
+  untested;
+- `npm run test:e2e` fails six tests from the documented clean setup because
+  its fixture dates are stale;
+- unknown URLs render the home page rather than a designed 404;
+- SPA navigation leaves focus on `body` and gives no route announcement.
+
+The review did not modify product code. `npm test` (7/7), `npm run build`,
+live basic verification, Playwright Axe serious/critical checks, service-worker
+offline shell, and a live Leeds result passed. The earlier injection, mobile
+overflow/type, CSP/frame, ARIA, and request-timeout issues remain repaired.
+
+See `.factory/review-1.md` for all evidence, prior-finding disposition, and
+the required repair/reverification steps.
+
 ## Release result: PASS
 
 Independent verification work order `winter-ride-window-verify-3` passed
