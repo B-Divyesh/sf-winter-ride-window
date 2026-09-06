@@ -183,6 +183,8 @@ test('@claim:sample-demo loads a populated ride check in one click', async ({ pa
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
   await expect(page.getByText('Sample data.')).toBeVisible();
   await expect(page.locator('.hour-strip > li > details.hour-card')).toHaveCount(9);
+  const scan = await new AxeBuilder({ page: page as any }).analyze();
+  expect(scan.violations.filter(v => ['serious', 'critical'].includes(v.impact || ''))).toEqual([]);
   expect(requests.every(url => new URL(url).origin === new URL(page.url()).origin)).toBe(true);
 });
 
