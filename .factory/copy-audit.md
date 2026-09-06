@@ -43,7 +43,7 @@ matches.
 | You remain responsible for the route, equipment, skills, and local guidance. | 11 | Pass |
 | If conditions are unclear, choose a lower-exposure option. | 8 | Pass |
 | Check a winter cycling forecast against your own limits. | 9 | Pass |
-| Original artwork generated for this product · Built by Param Factory · MIT | 10 | Pass |
+| Original artwork generated for this product · Built by Param Factory · v1.0.0 · MIT | 11 | Pass |
 
 ## Terminology
 

@@ -23,7 +23,7 @@ function footer() {
     <div><a class="brand footer-brand" href="/" data-route><span class="brand-mark" aria-hidden="true">⌁</span><span>Winter Ride Window</span></a>
       <p>Check a winter cycling forecast against your own limits.</p></div>
     <div class="footer-links"><a href="/privacy" data-route>Privacy</a><a href="/terms" data-route>Terms</a><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Forecast source ↗</a></div>
-    <p class="art-credit">Original artwork generated for this product · Built by Param Factory · MIT</p>
+    <p class="art-credit">Original artwork generated for this product · Built by Param Factory · v1.0.0 · MIT</p>
   </footer>`;
 }
 
