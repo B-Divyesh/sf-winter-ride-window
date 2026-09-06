@@ -253,7 +253,7 @@ async function live(browser) {
     return { scope: reg.scope, active: reg.active?.state, waiting: reg.waiting?.state || null, installing: reg.installing?.state || null, keys };
   });
   results.observations.serviceWorker = sw;
-  check(sw.active === 'activated' && sw.keys.includes('winter-ride-window-v1'), 'PWA: service worker is active and versioned cache exists', JSON.stringify(sw));
+  check(sw.active === 'activated' && sw.keys.includes('winter-ride-window-v7'), 'PWA: service worker is active and versioned cache exists', JSON.stringify(sw));
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
   check(await page.getByRole('heading', { level: 1 }).isVisible(), 'PWA: offline shell reload succeeds');

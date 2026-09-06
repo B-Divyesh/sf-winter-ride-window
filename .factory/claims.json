@@ -1,0 +1,51 @@
+[
+  {
+    "id": "sample-demo",
+    "claim": "Try a populated ride check with sample data in one click.",
+    "where": "Landing page primary action, README",
+    "test": "npm run test:e2e -- --grep @claim:sample-demo",
+    "sandbox": "Fresh browser context; open the landing page, activate the sample action, and verify the persistent demo label, sample result, and nine hourly samples."
+  },
+  {
+    "id": "broad-place-only",
+    "claim": "The planner asks for a broad place, not a street address.",
+    "where": "Landing facts, planner form, README",
+    "test": "npm run test:e2e -- --grep @claim:broad-place-only",
+    "sandbox": "Fresh demo context; replace the sample town with another town, complete the ride check, and verify that no street-address or route field is requested."
+  },
+  {
+    "id": "no-account",
+    "claim": "A sample or ride check does not require an account.",
+    "where": "Landing facts, Privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:no-account",
+    "sandbox": "Fresh demo context; verify that the populated sample opens with no sign-in, registration, or password control."
+  },
+  {
+    "id": "browser-only-preferences",
+    "claim": "Optional saved preferences stay in this browser and exclude the place and forecast.",
+    "where": "Landing facts, form help, Privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:browser-only-preferences",
+    "sandbox": "Fresh demo context; opt in to remembered preferences, run the sample, inspect demo-only browser storage, then reset the demo."
+  },
+  {
+    "id": "no-product-proxy",
+    "claim": "A real forecast request goes directly to Open-Meteo and is not received or proxied by Winter Ride Window.",
+    "where": "Privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:no-product-proxy",
+    "sandbox": "Fresh demo context; choose Start for real, use intercepted provider fixtures, and record every request origin through the completed ride check."
+  },
+  {
+    "id": "offline-explanation",
+    "claim": "After a visit, the public app shell can open offline so the privacy explanation remains available.",
+    "where": "Privacy page",
+    "test": "npm run test:e2e -- --grep @claim:offline-explanation",
+    "sandbox": "Own fresh browser context; visit the demo, wait for its service worker, set the context offline, reload, and open Privacy."
+  },
+  {
+    "id": "no-tracking",
+    "claim": "The sample flow sets no cookies and makes no third-party request.",
+    "where": "Privacy page",
+    "test": "npm run test:e2e -- --grep @claim:no-tracking",
+    "sandbox": "Fresh demo context; record all requests and cookies while the shipped sample result loads."
+  }
+]

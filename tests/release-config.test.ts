@@ -16,4 +16,13 @@ describe('production response policy', () => {
   it('denies framing for clients that still use X-Frame-Options', () => {
     expect(headers['X-Frame-Options']).toBe('DENY');
   });
+
+  it('preserves only known app routes and sends missing URLs to the designed 404', () => {
+    expect(config.navigationFallback).toBeUndefined();
+    expect(config.routes.map((route: { route: string }) => route.route)).toEqual(expect.arrayContaining(['/privacy', '/terms', '/demo']));
+    expect(config.responseOverrides?.['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
+    const notFound = readFileSync(join(process.cwd(), 'public/404.html'), 'utf8');
+    expect(notFound).toContain('<main id="main">');
+    expect(notFound).toContain('<h1>This page does not exist.</h1>');
+  });
 });

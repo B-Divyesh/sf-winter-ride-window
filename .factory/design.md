@@ -92,3 +92,8 @@ product. Source PNG and prompt sidecar live in `assets/src/`; optimized WebP and
 AVIF derivatives ship from `public/assets/`. UI symbols and the route-exposure
 diagram are hand-authored CSS/SVG-style primitives and carry the repository's
 MIT license.
+
+The 1200×630 Open Graph image at
+`public/assets/winter-ride-window-social.jpg` is a reviewed 2026-09-06 crop of
+the selected original hero. It contains no text, logos, brands, people, or new
+generated material; it exists only to give shared links a correctly sized image.

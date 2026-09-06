@@ -1,7 +1,7 @@
 {
   "name": "Winter Ride Window",
   "short_name": "Ride Window",
-  "description": "A local-first winter cycling pre-ride field check.",
+  "description": "Check winter cycling forecast hours against your own limits.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3eedc",

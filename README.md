@@ -1,18 +1,24 @@
 # Winter Ride Window
 
-Winter Ride Window is a fast pre-ride field check for commuter cyclists. It
-compares an hourly forecast with the rider's own temperature, wind, gust,
-precipitation, ice-check, route-exposure, daylight, and phone-battery limits.
-The output is an auditable checklist—not a ride/no-ride score or safety advice.
+Winter Ride Window helps commuter cyclists check winter ride hours against
+their own limits. It compares an hourly forecast with temperature, wind, gust,
+precipitation, ice-check, route exposure, daylight, and phone-battery limits.
+The output is a checklist, not a ride/no-ride score or safety advice.
 
 Live site: <https://winter-ride-window.sociobot.in>
 
 ## Who it is for
 
-It is for people deciding whether a familiar commute is reasonably rideable in
-winter without turning uncertainty into an all-season ban. The planner asks for
-only a town, district, or postcode; it never asks for home/work addresses or an
-exact route.
+It is for people deciding whether a familiar commute needs more checks in
+winter. The planner asks for a town, district, or postcode. It does not ask
+for a street address or exact route.
+
+## Try the sample
+
+Open [the sample ride check](https://winter-ride-window.sociobot.in/demo) to
+see a populated Leeds result immediately. The demo is isolated from real use.
+It uses shipped sample data and makes no forecast request. Its banner lets you
+reset the sample or start a real check.
 
 ## How it works
 
@@ -22,11 +28,11 @@ exact route.
 4. Review forecast blind spots before deciding: ice, maintenance, closures,
    crosswind, equipment, and local guidance.
 
-Place lookup and forecast data come directly from
-[Open-Meteo](https://open-meteo.com/) (CC BY 4.0). No request passes through a
-Winter Ride Window server. Optional preferences use browser local storage; the
-place and forecast are never saved. There are no accounts, cookies, analytics,
-payments, or third-party runtime scripts.
+Place lookup and forecast data go directly to
+[Open-Meteo](https://open-meteo.com/) (CC BY 4.0). Winter Ride Window does not
+receive or proxy those requests. Optional preferences use browser storage; the
+place and forecast are not stored. There is no account requirement. The sample
+flow sets no cookies and makes no third-party request.
 
 ## Develop and verify
 
@@ -53,6 +59,8 @@ factory worker, browsers are read from `$PLAYWRIGHT_BROWSERS_PATH`.
 - `src/styles.css` — botanical field-guide visual system and responsive layout.
 - `public/sw.js` — small versioned app-shell cache for offline explanations.
 - `tests/` — Vitest logic tests and Playwright desktop/mobile/Axe checks.
+- `.factory/claims.json` — public claims and their demo-first regression commands.
+- `.factory/demo.md` — sample data, isolated storage, and reset behavior.
 - `.factory/design.md` — product-specific visual thesis and asset provenance.
 - `.factory/handoff.md` — verification results and implementation handoff.
 
@@ -60,7 +68,7 @@ factory worker, browsers are read from `$PLAYWRIGHT_BROWSERS_PATH`.
 
 This is not live navigation, emergency advice, a source of legal or road-status
 claims, or a promise that a ride is safe. Forecast models cannot confirm black
-ice, path treatment, closures, or street-level wind. Riders should check current
+ice, path treatment, closures, or street-level wind. Check current
 observations, official warnings, equipment, skill, and local rules.
 
 ## License
