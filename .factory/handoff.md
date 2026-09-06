@@ -1,6 +1,14 @@
 # Winter Ride Window — release handoff
 
-## Release result: PASS
+## Current independent verification result: FAIL
+
+Verification 4 found one medium defect in the live service-worker path:
+after the service worker controls a browser, an unknown route renders the
+designed 404 page but reports HTTP 200 instead of HTTP 404. See
+`.factory/verification-4.md`. The original implementation result below remains
+useful history, but this product is not currently accepted.
+
+## Implementation release result: PASS
 
 - Implementation SHA: `fb5b20f51fc1563dc51640f9cb3028f07a9ec4c7`
 - Deployment: Azure Static Web Apps production resource
@@ -111,3 +119,18 @@ npm run preview
 Deploy `./dist` to the existing `sf-winter-ride-window` Azure Static Web App.
 `dist` includes `staticwebapp.config.json`; preserve that deployment
 configuration and the single static product deployment.
+
+## Independent verification 4
+
+- Verdict: **FAIL** (one medium finding; zero untested claims)
+- Implementation reviewed: `fb5b20f51fc1563dc51640f9cb3028f07a9ec4c7`
+- Documentation reviewed: `f319629fc124ba5fcb6bfe7f3aa577eb69dd7263`
+- Report: `.factory/verification-4.md`
+- Clean checkout checks passed: `npm ci`, `npm test` (8/8), TypeScript,
+  production build, full E2E (38/38), audit, and all seven independent claim
+  commands.
+- Live desktop/phone demo, real forecast, accessibility, privacy, legal,
+  offline, focus, and response-header checks passed except for the warm-browser
+  unknown-route status. A fresh unknown route remains HTTP 404; after the
+  service worker controls a browser it becomes 200. Repair that path and repeat
+  both status checks before release acceptance.
